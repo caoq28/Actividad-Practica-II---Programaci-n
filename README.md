@@ -11,4 +11,4 @@ Por otro lado, el sistema también debe contemplar la atención diaria de todos 
 
 En conjunto, esta actividad busca que se aplique correctamente el uso de estructuras de datos como pilas y colas en un contexto práctico, integrando conceptos de organización, priorización y gestión de información. Asimismo, se busca fortalecer las habilidades en el diseño de algoritmos orientados a la organización, priorización y procesamiento de información, cumpliendo con los requerimientos establecidos en la actividad.
 
-Camila Andrea Oquendo Quintero
+> Camila Andrea Oquendo Quintero
