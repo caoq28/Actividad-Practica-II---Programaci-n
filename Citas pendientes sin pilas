@@ -1,0 +1,237 @@
+from datetime import datetime
+from collections import deque
+
+class Cliente:
+
+    def __init__(self, cedula, nombre, telefono, direccion, tipo_atencion, prioridad, fecha):
+
+        self.cedula = int(cedula)
+        self.nombre = nombre
+        self.telefono = telefono
+        self.direccion = direccion
+        self.tipo_atencion = tipo_atencion
+        self.prioridad = prioridad
+        self.fecha = self.validar_fecha(fecha)
+
+    def validar_fecha(self, fecha):
+
+        while True:
+            try:
+                return datetime.strptime(fecha, "%Y-%m-%d")
+            except:
+                fecha = input("Fecha no válida. Por favor, ingrese la fecha en formato YYYY-MM-DD: ")
+
+    def __str__(self):
+        return (f"{self.cedula} - {self.nombre} - Tel: {self.telefono} - " +
+                f"Dir: {self.direccion} - Tipo: {self.tipo_atencion} - " +
+                f"Prioridad: {self.prioridad} - Fecha: {self.fecha.strftime('%Y-%m-%d')}")
+
+
+# LISTA PRIORITARIA DE CLIENTES (REEMPLAZA PILA)
+
+class ListaPrioritaria:
+
+    def __init__(self):
+        self.items = []
+
+    def agregar(self, cliente):
+        self.items.append(cliente)
+
+    def atender(self):
+        if self.items:
+            return self.items.pop(0)
+
+    def mostrar(self):
+        if not self.items:
+            print("No hay clientes en la lista prioritaria.")
+            return
+
+        print("LISTA PRIORITARIA URGENTE")
+        for cliente in self.items:
+            print(cliente)
+
+
+# COLA DE CLIENTES
+
+class Cola:
+
+    def __init__(self):
+        self.items = deque()
+
+    def enqueue(self, cliente):
+        self.items.append(cliente)
+
+    def dequeue(self):
+        if self.items:
+            return self.items.popleft()
+
+    def mostrar(self):
+        if not self.items:
+            print("No hay clientes en la cola.")
+            return
+
+        print("COLA AGENDADA")
+        for cliente in self.items:
+            print(cliente)
+
+
+# Validación Menú
+
+def leer_opcion(mensaje, opciones):
+
+    while True:
+        try:
+            valor = int(input(mensaje))
+            if valor in opciones:
+                return valor
+            print("Opción no válida.")
+
+        except:
+            print("Ingrese un número válido.")
+
+
+# LISTA PRIORITARIA URGENCIAS
+
+def generar_lista(clientes):
+
+    filtrados = [
+        cliente for cliente in clientes
+        if cliente.tipo_atencion.lower() == "extracción".lower()
+        and cliente.prioridad.lower() == "urgente".lower()
+    ]
+
+    if not filtrados:
+        print("No hay clientes que cumplan con los criterios.")
+        return None
+
+    filtrados.sort(key=lambda cliente: cliente.fecha)
+
+    lista = ListaPrioritaria()
+
+    for cliente in filtrados:
+        lista.agregar(cliente)
+
+    return lista
+
+
+# COLA AGENDA
+
+def generar_cola(clientes):
+
+    filtrados = [
+        cliente for cliente in clientes
+        if cliente.tipo_atencion.lower() == "extracción".lower()
+    ]
+
+    if not filtrados:
+        print("No hay clientes que cumplan con los criterios para la cola.")
+        return None
+
+    ordenados = sorted(filtrados, key=lambda cliente: cliente.fecha)
+
+    cola = Cola()
+
+    for cliente in ordenados:
+        cola.enqueue(cliente)
+
+    return cola
+
+
+# ATENDER COLA CLIENTE
+
+def atender_cola(cola):
+
+    if not cola or not cola.items:
+        print("No hay clientes en la cola para atender.")
+        return
+
+    print("Atendiendo al siguiente cliente en la cola:")
+    cliente = cola.dequeue()
+    print(cliente)
+
+
+# ESTADÍSTICAS
+
+def estadisticas(clientes, lista, cola):
+
+    if not clientes:
+        print("No hay clientes registrados.")
+        return
+
+    print("ESTADÍSTICAS")
+    print(f"Total de clientes registrados: {len(clientes)}")
+    print("Total urgentes:",
+          sum(1 for cliente in clientes if cliente.prioridad.lower() == "urgente"))
+    print("Total extracciones:",
+          sum(1 for cliente in clientes if cliente.tipo_atencion.lower() == "extracción"))
+
+    print("En la lista prioritaria:", len(lista.items) if lista else 0)
+    print("En la cola:", len(cola.items) if cola else 0)
+
+    proxima = min(clientes, key=lambda cliente: cliente.fecha)
+    print("Próximo cliente a atender:", proxima)
+
+
+# MENÚ
+
+def menu():
+
+    clientes = []
+    lista = None
+    cola = None
+
+    while True:
+
+        print("\nMenú:")
+        print("1. Registrar cliente")
+        print("2. Generar lista prioritaria de urgencias")
+        print("3. Mostrar lista prioritaria")
+        print("4. Generar cola de extracciones")
+        print("5. Mostrar cola de extracciones")
+        print("6. Atender siguiente cliente en la cola")
+        print("7. Mostrar estadísticas")
+        print("8. Salir")
+
+        opcion = leer_opcion("Seleccione una opción: ", range(1, 9))
+
+        if opcion == 1:
+
+            cliente = Cliente(
+                cedula=input("Ingrese la cédula del cliente: "),
+                nombre=input("Ingrese el nombre del cliente: "),
+                telefono=input("Ingrese el teléfono del cliente: "),
+                direccion=input("Ingrese la dirección del cliente: "),
+                tipo_atencion=input("Ingrese el tipo de atención (Extracción o Consulta): "),
+                prioridad=input("Ingrese la prioridad (Urgente o Normal): "),
+                fecha=input("Ingrese la fecha de atención (YYYY-MM-DD): ")
+            )
+
+            clientes.append(cliente)
+            print("Cliente registrado exitosamente.")
+
+        elif opcion == 2:
+            lista = generar_lista(clientes)
+
+        elif opcion == 3:
+            if lista:
+                lista.mostrar()
+
+        elif opcion == 4:
+            cola = generar_cola(clientes)
+
+        elif opcion == 5:
+            if cola:
+                cola.mostrar()
+
+        elif opcion == 6:
+            atender_cola(cola)
+
+        elif opcion == 7:
+            estadisticas(clientes, lista, cola)
+
+        elif opcion == 8:
+            print("Saliendo del programa.")
+            break
+
+
+menu()
